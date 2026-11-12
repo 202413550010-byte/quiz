@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quiz Mundo Geométrico</title>
+<style>
+:root{
+  --bg1:#1b0f6b;--bg2:#2a1590;--ok:#9bbb3a;--bad:#b8453d;--btn:#8a78d8;
+  --gold:#d9bd3c;--card:rgba(20,10,80,.55);--line:rgba(255,255,255,.35);--txt:#fff;
+  color-scheme:dark;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*{box-sizing:border-box}
+body{margin:0;height:100%;background:#0e0838;color:var(--txt);font-family:Inter,system-ui,"Segoe UI",Roboto,Arial,sans-serif;display:flex;justify-content:center}
+#app{position:relative;width:100%;max-width:430px;min-height:100%;overflow:hidden;background:linear-gradient(160deg,var(--bg2),var(--bg1));transition:background .3s}
+#app.ok{background:linear-gradient(160deg,#3b3a8c,#2e2670)}
+#app.bad{background:linear-gradient(160deg,#5a1a7a,#3e1060)}
+.blob{position:absolute;border-radius:50%;background:#8f7fe0;opacity:.55;pointer-events:none}
+.b1{width:260px;height:220px;top:-90px;left:-80px}
+.b2{width:240px;height:200px;bottom:-90px;right:-80px}
+.deco{position:absolute;pointer-events:none;opacity:.35;font-size:54px}
+.screen{position:relative;z-index:1;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;padding:18px 20px 24px}
+.hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.hearts{font-size:20px;letter-spacing:2px}
+.pts{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:4px 16px;font-size:14px}
+.q{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:20px 16px;text-align:center;font-size:20px;line-height:1.35;margin-bottom:20px}
+.opts{display:flex;flex-direction:column;gap:12px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:10px;padding:14px 12px;font:inherit;font-size:16px;cursor:pointer;transition:transform .1s,background .15s}
+.opt:hover{background:rgba(138,120,216,.4)}.opt:active{transform:scale(.98)}
+.opt b{opacity:.7;width:18px}
+.title{margin:auto 0;text-align:center;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:26px 14px}
+.title small{display:block;color:var(--gold);font-size:22px}
+.title h1{margin:4px 0 0;color:var(--gold);font-size:34px;line-height:1.15;font-weight:600}
+.shapes{font-size:34px;margin-bottom:10px}
+.btn{display:block;width:100%;border:1px solid #1a1050;background:var(--btn);color:#fff;border-radius:10px;padding:14px;font:inherit;font-size:18px;font-weight:600;cursor:pointer;margin-top:14px}
+.btn:hover{filter:brightness(1.1)}
+.btn.next{display:flex;justify-content:space-between;font-weight:500;font-size:16px;margin-top:auto}
+.menu{margin-top:auto;padding-top:30px}
+.fb{margin:auto 0;text-align:center}
+.badge{width:130px;height:110px;margin:0 auto 14px;display:grid;place-items:center;font-size:72px;font-weight:700;border-radius:8px;transform:rotate(-6deg)}
+.ok .badge{background:var(--ok)}.bad .badge{background:var(--bad)}
+.fb h2{font-size:38px;margin:0 0 12px}
+.fb p{font-size:17px;line-height:1.45;margin:0 8px}
+.big{font-size:56px;font-weight:700;color:var(--gold);margin:10px 0}
+.stars{font-size:34px;margin-bottom:6px}
+@media (prefers-reduced-motion:no-preference){.screen{animation:in .25s ease}}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div id="app"><div class="blob b1"></div><div class="blob b2"></div><div id="view"></div></div>
+<script>
+const QUESTIONS=[
+{q:"Um cubo possui arestas de 4 cm. Qual é o seu volume?",
+ o:["16 cm³","64 cm³","48 cm³","12 cm³"],c:1,
+ ok:"Parabéns! O volume do cubo é calculado elevando a medida da aresta ao cubo: V = 4³ = 64 cm³.",
+ w:{0:"Esse resultado é obtido multiplicando 4 × 4, considerando apenas duas dimensões. Para calcular o volume, precisamos considerar as três dimensões.",
+    2:"Esse resultado corresponde à soma dos comprimentos das 12 arestas do cubo (12 × 4), não ao volume.",
+    3:"Esse resultado é obtido pela soma das três dimensões (4 + 4 + 4). Porém, para calcular o volume de um cubo, devemos multiplicar as três dimensões, e não somá-las: 4 × 4 × 4 = 64 cm³."}},
+{q:"Quantas faces, arestas e vértices possui um prisma triangular?",
+ o:["4 faces, 6 arestas e 4 vértices.","6 faces, 12 arestas e 8 vértices.","5 faces, 9 arestas e 6 vértices.","5 faces, 8 arestas e 6 vértices."],c:2,
+ ok:"Muito bem! O prisma triangular possui duas bases triangulares, três faces laterais, nove arestas e seis vértices.",
+ w:{0:"Essas características correspondem a uma pirâmide triangular, que possui quatro faces, seis arestas e quatro vértices.",
+    1:"Essas são as quantidades encontradas em um prisma quadrangular, como um paralelepípedo.",
+    3:"O número de faces e vértices está correto, mas o prisma possui nove arestas, e não oito."}},
+{q:"Qual das alternativas apresenta corretamente as características de uma esfera?",
+ o:["Possui duas bases circulares e uma superfície lateral curva.","Possui seis faces quadradas e oito vértices.","Possui uma base circular e uma superfície lateral curva.","Possui uma superfície curva e não apresenta arestas nem vértices."],c:3,
+ ok:"Excelente! A esfera possui uma superfície totalmente curva, sem faces planas, arestas ou vértices.",
+ w:{0:"Essa é a descrição de um cilindro, que possui duas bases circulares e uma superfície lateral curva.",
+    1:"Essa descrição corresponde a um cubo, que possui seis faces quadradas e oito vértices.",
+    2:"Essas são características de um cone, que possui uma base circular e um vértice."}},
+{q:"Sobre os sólidos geométricos, qual alternativa está correta?",
+ o:["O cilindro é um poliedro formado apenas por faces planas.","O cubo é um poliedro formado por seis faces quadradas.","A esfera possui faces planas e vértices.","O cone possui duas bases circulares e nenhuma superfície curva."],c:1,
+ ok:"Parabéns! O cubo é um poliedro regular formado por seis faces quadradas, doze arestas e oito vértices.",
+ w:{0:"O cilindro não é um poliedro, pois apresenta uma superfície lateral curva.",
+    2:"A esfera não possui faces planas nem vértices. Sua superfície é completamente curva.",
+    3:"O cone possui apenas uma base circular, uma superfície lateral curva e um vértice."}}
+];
+const STEP=100,LIVES=3;
+let i=0,score=0,lives=LIVES,lastOk=false;
+const app=document.getElementById('app'),view=document.getElementById('view');
+const L="ABCD";
+const hearts=()=>"❤️".repeat(lives)+"🖤".repeat(LIVES-lives);
+function paint(cls,html){app.className=cls||"";view.innerHTML='<div class="screen">'+html+'</div>';}
+function start(){
+  paint("",`<div class="title"><div class="shapes" aria-hidden="true">🧊 📐 🔺</div><small>Quiz</small><h1>Mundo<br>Geométrico</h1></div>
+  <div class="menu"><button class="btn" id="go">Iniciar</button><button class="btn" id="exit">Sair</button></div>`);
+  go.onclick=()=>{i=0;score=0;lives=LIVES;ask();};
+  exit.onclick=()=>paint("",`<div class="fb"><h2>Até logo!</h2><p>Volte quando quiser jogar de novo.</p></div><button class="btn next" id="back">Voltar ao início <span>→</span></button>`)||(back.onclick=start);
+}
+function ask(){
+  const d=QUESTIONS[i];
+  paint("",`<div class="hud"><span class="hearts" aria-label="${lives} vidas">${hearts()}</span><span class="pts">${score} Pts</span></div>
+  <div class="q">${d.q}</div>
+  <div class="opts">${d.o.map((t,k)=>`<button class="opt" data-k="${k}"><b>${L[k]}</b><span>${t}</span></button>`).join("")}</div>`);
+  view.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(+b.dataset.k));
+}
+function answer(k){
+  const d=QUESTIONS[i];lastOk=k===d.c;
+  if(lastOk)score+=STEP;else lives--;
+  const last=i===QUESTIONS.length-1||lives===0;
+  paint(lastOk?"ok":"bad",`<div class="fb"><div class="badge" aria-hidden="true">${lastOk?"✓":"✗"}</div>
+  <h2>${lastOk?"Correto!":"Ops!"}</h2><p>${lastOk?d.ok:d.w[k]}</p></div>
+  <button class="btn next" id="nx">${last?"Ver Placar":"Próxima Pergunta"} <span>→</span></button>`);
+  nx.onclick=()=>{if(last)result();else{i++;ask();}};
+}
+function result(){
+  const lost=score<=STEP;
+  const stars=lost?"💔":"⭐".repeat(score/STEP-1||1);
+  const msg=lost?"Você perdeu!":score===400?"Perfeito! Você domina os sólidos!":score===300?"Muito bem!":"Bom esforço!";
+  paint(lost?"bad":"ok",`<div class="fb"><div class="stars" aria-hidden="true">${stars}</div><h2>${msg}</h2><div class="big">${score} pts</div>
+  <p>${lost?"Revise os sólidos geométricos e tente de novo.":"Continue praticando geometria!"}</p></div>
+  <button class="btn next" id="again">Jogar Novamente <span>↻</span></button>`);
+  again.onclick=start;
+}
+start();
+</script>
+</body>
+</html>
